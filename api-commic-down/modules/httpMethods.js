@@ -3,36 +3,29 @@ var config = require('./config')
 var mkdirp = require('mkdirp')
 var axios = require('axios')
 var fs = require('fs');
+var https = require('https');
+
 class httpMothods {
-    async asyncPostErp(commonName, request, withoutToken) {
+    async asyncGet(base_url) {
         let errTrack = ""
         let errMsg = ""
         let result = null
-        let base_url = ""
         let oldTime = new Date()
+        const agent = new https.Agent({
+            rejectUnauthorized: false
+        });
         try {
-            let settings = await this.getBussinessSettings(request.bussinessId)
-            base_url = settings.erp.apiServiceUrl + commonName
-            if (!withoutToken) {
-                request = request || {}
-                if (!settings.erp.token) {
-                    request.Token = await this.createErpToken(settings, request.bussinessId)
-                } else {
-                    request.Token = settings.erp.token
-                }
-            }
-            result = await axios.post(base_url, request);
+            result = await axios.get(base_url, { httpsAgent: agent });
             //result = res.data
         } catch (err) {
             errTrack = err.stack
             errMsg = err.message
         }
         await accessLogfile.customWriteLog({
-            apiType: "ERP",
+            apiType: "wget",
             startTime: oldTime,
             endTime: new Date(),
             apUri: base_url,
-            requestData: request,
             resposeData: result ? result.data : "",
             errorData: errTrack
         })
@@ -43,7 +36,65 @@ class httpMothods {
                 data: errMsg
             };
         } else {
-            return result.data
+            return {
+                issuccess: true,
+                data: result ? result.data : "",
+            };
+        }
+    }
+    async asyncPost(base_url, request) {
+        let errTrack = ""
+        let errMsg = ""
+        let result = null
+        let oldTime = new Date()
+        const agent = new https.Agent({
+            rejectUnauthorized: false
+        });
+        try {
+            result = await axios.post(base_url, request);
+            //result = res.data
+        } catch (err) {
+            errTrack = err.stack
+            errMsg = err.message
+        }
+        await accessLogfile.customWriteLog({
+            apiType: "wget",
+            startTime: oldTime,
+            requestData: request,
+            endTime: new Date(),
+            apUri: base_url,
+            resposeData: result ? result.data : "",
+            errorData: errTrack
+        })
+
+        if (errTrack) {
+            return {
+                issuccess: false,
+                data: errMsg
+            };
+        } else {
+            return {
+                issuccess: true,
+                data: result ? result.data : "",
+            };
+        }
+    }
+
+    async asyncGetImgBase64(url) {
+        try {
+            let response = await axios.get(url, {
+                responseType: 'arraybuffer'
+            })
+            let data = Buffer.from(response.data, 'binary').toString('base64')
+            return {
+                issuccess: true,
+                data: "data:image/jpg;base64," + data
+            }
+        } catch (ex) {
+            return {
+                issuccess: false,
+                data: ex.message
+            }
         }
     }
 
@@ -311,33 +362,33 @@ class httpMothods {
             data: result.data
         };
     }
-    async asyncGet(base_url, request) {
-        let errTrack = ""
-        let errMsg = ""
-        let result = null
-        let oldTime = new Date()
-        try {
-            result = await axios.get(base_url, request);
-        } catch (err) {
-            errTrack = err.stack
-            errMsg = err.message
-        }
-        await accessLogfile.customWriteLog({
-            apiType: "WGET",
-            startTime: oldTime,
-            endTime: new Date(),
-            apUri: base_url,
-            requestData: request,
-            resposeData: result ? result.data : "",
-            errorData: errTrack
-        })
+    // async asyncGet(base_url, request) {
+    //     let errTrack = ""
+    //     let errMsg = ""
+    //     let result = null
+    //     let oldTime = new Date()
+    //     try {
+    //         result = await axios.get(base_url, request);
+    //     } catch (err) {
+    //         errTrack = err.stack
+    //         errMsg = err.message
+    //     }
+    //     await accessLogfile.customWriteLog({
+    //         apiType: "WGET",
+    //         startTime: oldTime,
+    //         endTime: new Date(),
+    //         apUri: base_url,
+    //         requestData: request,
+    //         resposeData: result ? result.data : "",
+    //         errorData: errTrack
+    //     })
 
-        return {
-            issuccess: !Boolean(errTrack),
-            msg: errTrack ? message : "",
-            data: result.data
-        };
-    }
+    //     return {
+    //         issuccess: !Boolean(errTrack),
+    //         msg: errTrack ? message : "",
+    //         data: result.data
+    //     };
+    // }
     async asyncPostCommon(url, request, responseType) {
         let errTrack = ""
         let errMsg = ""
