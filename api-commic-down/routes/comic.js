@@ -17,8 +17,22 @@ router.post("/comic/searchComic", routerMethod(async (body, db, options) => {
     if (!comicConfig) {
         return routerMethod.createRespose("无效的配置名", false)
     }
-    let url = comicConfig.search.searchUrl.replace(/\{\$key\}/, encodeURIComponent(body.searchKey))
-    let result = await httpMothods["async" + comicConfig.search.method](url)
+
+    let params = null
+    let url = ""
+
+    switch (comicConfig.search.method) {
+        case "Get":
+            url = comicConfig.search.searchUrl.replace(/\{\$key\}/, encodeURIComponent(body.searchKey))
+            break
+        case "Form":
+            url = comicConfig.search.searchUrl
+            params = {}
+            params[comicConfig.search.searchKey] = body.searchKey
+            break
+    }
+    let result = await httpMothods["async" + comicConfig.search.method](url, params)
+   
     if (!result.issuccess) {
         return routerMethod.createRespose("请求漫画列表失败", false)
     }
@@ -65,8 +79,8 @@ router.post("/comic/getComicInfo", routerMethod(async (body, db, options) => {
     parent.each(idx => {
         let child = {
             idx: idx,
-            compResult:0,
-            compNum:0,
+            compResult: 0,
+            compNum: 0,
 
         }
         comicConfig.one.filter.childs.forEach(y => {

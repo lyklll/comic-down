@@ -60,9 +60,6 @@ let obj = [{
     search: {
         method: "Get",
         searchUrl: "https://www.tutumanhua.com/statics/search.aspx?key={$key}&button=%E6%90%9C%E7%B4%A2",
-        pager: {
-            key: "page"
-        },
         filter: {
             parentPath: ".cy_list_mh ul",
             childs: [{
@@ -116,5 +113,73 @@ let obj = [{
         return imgUrls
     }
 
+}, {
+    name: "jiujiumanhua",
+    title: "九九漫画",
+    domain: "http://99.hhxxee.com/",
+    search: {
+        method: "Form",
+        searchUrl: "http://99.hhxxee.com/search/s.aspx",
+        searchKey: "search_keyword",
+        filter: {
+            parentPath: ".cInfoItem",
+            childs: [{
+                key: "url",
+                path: ".cListTitle a",
+                attr: "href"
+            }, {
+                key: "title",
+                path: ".cListTitle"
+            }, {
+                key: "author",
+                path: ".cListh1 .cl1_2"
+            }]
+        }
+    },
+    //获取单个漫画的章节概况
+    one: {
+        method: "Get",
+        searchUrl: "http://99.hhxxee.com/{$key}",
+        filter: {
+            imgPath: ".img_div img",
+            parentPath: ".cVolList div",
+            childs: [{
+                key: "url",
+                path: "a",
+                attr: "href"
+            }, {
+                key: "title",
+                path: "a",
+            }]
+        }
+    },
+    single: async (url, httpMothods) => {
+        //域名列表
+        let damio = "http://99.94201314.net/dm01/|http://99.94201314.net/dm02/|http://99.94201314.net/dm03/|http://99.94201314.net/dm04/|http://99.94201314.net/dm05/|http://99.94201314.net/dm06/|http://99.94201314.net/dm07/|http://99.94201314.net/dm08/|http://99.94201314.net/dm09/|http://99.94201314.net/dm10/|http://99.94201314.net/dm11/|http://99.94201314.net/dm12/|http://99.94201314.net/dm13/|http://173.231.57.238/dm14/|http://99.94201314.net/dm15/|http://142.4.34.102/dm16/";
+        damio = damio.split("|")
+        //获取base64
+        let getUrl = `http://99.hhxxee.com/${url}`
+        let result = await httpMothods.asyncGet(getUrl)
+        if (!result.issuccess) {
+            return []
+        }
+        //获取域名
+        let dstartStr = "var sPath=\""
+        let dstartIdx = result.data.indexOf(dstartStr)
+        let dtmp = result.data.substr(dstartIdx + dstartStr.length)
+        let dendIdx = dtmp.indexOf(";")
+        let dIdx = dtmp.substr(0, dendIdx - 1)
+        let d = damio[parseInt(dIdx)-1]
+        //获取图片地址
+        let startStr = "var sFiles=\""
+        let startIdx = result.data.indexOf(startStr)
+        let tmp = result.data.substr(startIdx + startStr.length)
+        let endIdx = tmp.indexOf(";")
+        let imgsCode = tmp.substr(0, endIdx - 1)
+        let imgUrls = imgsCode.split("|")
+        imgUrls = imgUrls.map(x => `${d}${x}`)
+
+        return imgUrls
+    }
 }]
 module.exports = obj

@@ -51,7 +51,56 @@ class httpMothods {
             rejectUnauthorized: false
         });
         try {
-            result = await axios.post(base_url, request);
+            result = await axios.post(base_url,request)
+            //result = res.data
+        } catch (err) {
+            errTrack = err.stack
+            errMsg = err.message
+        }
+        await accessLogfile.customWriteLog({
+            apiType: "wget",
+            startTime: oldTime,
+            requestData: request,
+            endTime: new Date(),
+            apUri: base_url,
+            resposeData: result ? result.data : "",
+            errorData: errTrack
+        })
+
+        if (errTrack) {
+            return {
+                issuccess: false,
+                data: errMsg
+            };
+        } else {
+            return {
+                issuccess: true,
+                data: result ? result.data : "",
+            };
+        }
+    }
+    async asyncForm(base_url, request) {
+        let errTrack = ""
+        let errMsg = ""
+        let result = null
+        let oldTime = new Date()
+        const agent = new https.Agent({
+            rejectUnauthorized: false
+        });
+        try {
+            result = await axios({
+                method:"POST",
+                url:base_url, 
+                data:request,
+                transformRequest: [function (data) {
+              let ret = ''
+              for (let it in data) {
+                ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+              }
+              return ret
+            }],
+                headers:{"Content-Type":"application/x-www-form-urlencoded"}
+            });
             //result = res.data
         } catch (err) {
             errTrack = err.stack
