@@ -46,7 +46,8 @@ export default {
 
     },
     components: {
-        appSearchView,appSettings
+        appSearchView,
+        appSettings
     },
     data() {
         return {
@@ -54,17 +55,16 @@ export default {
             curSiteSelected: "",
             curSearchWord: "",
             menuList: [],
-            showName:"sites"
+            showName: "sites"
         }
     },
     methods: {
         menuSelect(e) {
             if (e.indexOf("menu") < 0) {
                 this.curSiteSelected = e
-                this.showName="sites"
-            }
-            else{
-                 this.showName=e
+                this.showName = "sites"
+            } else {
+                this.showName = e
             }
         },
         search() {
@@ -72,8 +72,16 @@ export default {
         }
     },
     async created() {
-
-
+        //  if(1==1){
+        // let that = this
+        // for (var i = 0; i < 13; i++) {
+        //     (function(a) {
+        //         setTimeout(()=>{
+        //             that.$service("test/command", { idx: a })
+        //         },10)
+                
+        //     })(i)
+        // }}
         let menuListResult = await this.$service("comic/getAllSites")
 
         if (menuListResult.issuccess) {
@@ -82,6 +90,8 @@ export default {
         } else {
             this.$message.error(menuListResult.data);
         }
+       
+
     }
 }
 </script>

@@ -39,8 +39,10 @@
 <script>
 import fs from "fs"
 var path = require('path');
+var ipcRenderer = require('electron').ipcRenderer;
+
 export default {
-    props: ["siteName", "searchWord"],
+    props: ["siteName", "searchWord", "isMain"],
     computed: {
         toSearch() {
             if (this.siteName && this.searchWord) {
@@ -83,7 +85,7 @@ export default {
         },
         downloadAll() {
             this.$refs.downTable.selection.forEach(x => {
-              this.download(x)  
+                this.download(x)
             })
         },
         createDirs(bookName, groupName) {
@@ -102,39 +104,55 @@ export default {
             fs.existsSync(sumPath) || this.mkdirsSync(sumPath)
             return sumPath
         },
-        async saveImg(imgUrl, bookName, groupName, name, rowData, rowCount) {
-            let result = await this.$service("comic/getImgBase64", {
-                imgUrl: imgUrl
-            },false)
-            if (result.issuccess) {
-                var base64Data = result.data.replace(/^data:image\/\w+;base64,/, "");
-                var dataBuffer = new Buffer(base64Data, 'base64');
-                let parentPath = this.createDirs(bookName, groupName)
+        async saveImg(imgUrl, bookName, groupName, name, rowData, rowCount, isMain) {
+            let parentPath = this.createDirs(bookName, groupName)
 
 
-                let filePath = path.join(parentPath, `${name}.jpg`)
-                fs.writeFile(filePath, dataBuffer, function(err) {
-                    if (err) {
-                        console.log(err)
-                    } else {
-                        rowData.compNum += 1
-                        rowData.compResult = Math.floor(rowData.compNum / rowCount * 100)
-
+            let filePath = path.join(parentPath, `${name}.jpg`)
+            if (isMain) {
+                ipcRenderer.send("savefile", {
+                    url: imgUrl,
+                    filePath: filePath,
+                    backArg: {
+                        groupName: groupName,
+                        rowCount: rowCount
                     }
-                });
+                })
             } else {
-                this.$message.error(result.data);
+                let result = await this.$service("comic/getImgBase64", {
+                    imgUrl: imgUrl,
+                    idx: name
+                }, false)
+                if (result.issuccess) {
+                    var base64Data = result.data.replace(/^data:image\/\w+;base64,/, "");
+                    var dataBuffer = new Buffer(base64Data, 'base64');
+                    fs.writeFile(filePath, dataBuffer, function(err) {
+                        if (err) {
+                            console.log(err)
+                        } else {
+                            rowData.compNum += 1
+                            rowData.compResult = Math.floor(rowData.compNum / rowCount * 100)
+
+                        }
+                    });
+                } else {
+                    this.$message.error(result.data);
+                }
             }
+
+
+
         },
 
         async download(data) {
+            console.log(`开始获取${data.title}有多少图片`)
             let result = await this.$service("comic/getImgs", {
                 imgPath: data.url,
                 siteName: this.siteName
-            },false)
+            }, false)
             if (result.issuccess) {
-                for (var i = 0; i < result.data.length; i++) {
-                    this.saveImg(result.data[i], this.showItem.title, data.title, this.dataLeftCompleting(4, "0", (i + 1)), data, result.data.length)
+                for (var i = 0; i < result.data.list.length; i++) {
+                    this.saveImg(result.data.list[i], this.showItem.title, data.title, this.dataLeftCompleting(4, "0", (i + 1)), data, result.data.list.length,result.data.isMain)
                 }
 
             } else {
@@ -175,7 +193,17 @@ export default {
             }
         }
     },
-    created() {}
+    created() {
+        ipcRenderer.on("savefile_reply", (event, arg) => {
+            if (arg.issuccess) {
+                let rowData = this.showItem.list.find(x => x.title == arg.backArg.groupName)
+                rowData.compNum += 1
+                rowData.compResult = Math.floor(rowData.compNum / arg.backArg.rowCount * 100)
+            } else {
+                this.$message.error(arg.data)
+            }
+        })
+    }
 }
 </script>
 <!-- Add "scoped" attribute to limit CSS to this component only -->

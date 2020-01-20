@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "pm2":"pm2 start ./bin/www --name comic --watch -i max",
     "dev": "nodemon ./bin/www",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

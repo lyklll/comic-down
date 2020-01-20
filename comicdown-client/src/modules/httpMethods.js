@@ -40,5 +40,27 @@ class apiServiceBase {
         }
     }
 
+    async asyncPostMain(command, request, showLoading = true) {
+
+        try {
+            let base_url = "http://127.0.0.1:3000/"
+            request = request || {}
+
+            let url = base_url + command;
+
+            let res = await axios.post(url, request);
+
+            return res.data
+        } catch (err) {
+            console.log(err)
+            return {
+                issuccess: false,
+                data: err.message
+            }
+        } finally {
+            
+        }
+    }
+
 }
 export default new apiServiceBase()

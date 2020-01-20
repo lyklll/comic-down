@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "electron:build": "vue-cli-service electron:build",
+    "ebuild": "vue-cli-service electron:build",
     "dev": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
@@ -24,7 +24,7 @@
     "@vue/cli-plugin-router": "^4.1.0",
     "@vue/cli-plugin-vuex": "^4.1.0",
     "@vue/cli-service": "^4.1.0",
-    "electron": "^6.0.0",
+    "electron": "^7.0.0",
     "node-sass": "^4.12.0",
     "sass-loader": "^8.0.0",
     "vue-cli-plugin-electron-builder": "^1.4.4",
@@ -33,5 +33,6 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
-  ]
+  ],
+  "__npminstall_done": false
 }

@@ -21,16 +21,16 @@ var routerHandler = function(fn) {
             }
         }
         res.send(result)
-        await accessLogfile.customWriteLog({
-            apiType: "SYS",
-            startTime: startTime,
-            endTime: new Date(),
-            apUri: req.originalUrl,
-            requestData: req.body,
-            resposeData: result,
-            errorData: errTrack,
-            ip: common.getClientIp(req)
-        })
+        // await accessLogfile.customWriteLog({
+        //     apiType: "SYS",
+        //     startTime: startTime,
+        //     endTime: new Date(),
+        //     apUri: req.originalUrl,
+        //     requestData: req.body,
+        //     resposeData: result,
+        //     errorData: errTrack,
+        //     ip: common.getClientIp(req)
+        // })
     }
 }
 routerHandler.createRespose = function(data = "", issuccess = true) {

@@ -57,6 +57,7 @@ let obj = [{
     name: "tutumanhua",
     title: "兔兔漫画",
     domain: "https://www.tutumanhua.com/",
+    isMain:false,
     search: {
         method: "Get",
         searchUrl: "https://www.tutumanhua.com/statics/search.aspx?key={$key}&button=%E6%90%9C%E7%B4%A2",
@@ -117,6 +118,7 @@ let obj = [{
     name: "jiujiumanhua",
     title: "九九漫画",
     domain: "http://99.hhxxee.com/",
+    isMain:true,
     search: {
         method: "Form",
         searchUrl: "http://99.hhxxee.com/search/s.aspx",

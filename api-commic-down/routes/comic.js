@@ -32,7 +32,7 @@ router.post("/comic/searchComic", routerMethod(async (body, db, options) => {
             break
     }
     let result = await httpMothods["async" + comicConfig.search.method](url, params)
-   
+
     if (!result.issuccess) {
         return routerMethod.createRespose("请求漫画列表失败", false)
     }
@@ -110,10 +110,11 @@ router.post("/comic/getImgs", routerMethod(async (body, db, options) => {
         return routerMethod.createRespose("无效的配置名", false)
     }
     let a = await comicConfig.single(body.imgPath, httpMothods)
-    return routerMethod.createRespose(a)
+    return routerMethod.createRespose({ isMain: comicConfig.isMain, list: a })
 }))
 
 router.post("/comic/getImgBase64", routerMethod(async (body, db, options) => {
+
     if (!body.imgUrl) {
         return routerMethod.createRespose("无效的关键字", false)
     }

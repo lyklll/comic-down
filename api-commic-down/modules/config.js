@@ -1,5 +1,6 @@
 let obj={
-	logDir:""
+	logDir:"",
+	test:false
 }
 
 module.exports = obj;
